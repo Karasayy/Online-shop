@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+	<h1>User registration</h1>
+	<p>In order to register you should enter your username and password</p>
+	<form method="post">
+		<table>
+			{{ form.as_table }}
+			{% csrf_token %}	
+			<tr>
+				<td></td>
+				<td>
+					<input type="submit" value="Sign up">
+				</td>
+			</tr>
+		</table>
+		<input type="hidden" name="next" value="{{ next }}">
+	</form>
+{% endblock content %}
