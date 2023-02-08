@@ -3,9 +3,10 @@ from django.shortcuts import redirect
 from .models import Product
 from .forms import ProductForm
 from .models import Rubric
+from .forms import CommentsForm
+from .models import Comments
 
-
-
+from django.views.generic import DetailView
 from django.views.generic.edit import CreateView
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
@@ -16,6 +17,19 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from onshop.forms import UserRegistrationForm
 from django.http import HttpResponseRedirect
 from django.views.generic.list import ListView
+from django.http import JsonResponse
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .serializers import ProductSerializers
+from django.views.generic.edit import FormMixin
+
+
+@api_view(['GET'])
+def home(request):
+    product = Product.objects.all()
+    serializer = ProductSerializers(product, many=True)
+    return Response(serializer.data)
+
 
 
 def Main(request):
@@ -32,24 +46,41 @@ def Checkout(request):
 
 def ProductList(request):
     items = Product.objects.all()
+    rubrics = Rubric.objects.all()
     context = {
-        'items':items
+        'items':items,
+        'rubrics':rubrics
     }
     return render(request, 'onshop/product_list.html', context)
 
-def ProductDetail(request, pk):
-    item = Product.objects.get(id=pk)
-    context = {
-        'item':item
-    }
-    return render(request, 'onshop/product_detail.html', context)
+class ProductDetail(DetailView, FormMixin):
+    model = Product
+    template_name = 'onshop/product_detail.html'
+    form_class = CommentsForm
+    context_object_name = 'item'
+    success_url = reverse_lazy('product-list')
 
-def by_rubric(request, rubric_id):
-    products = Product.objects.filter(rubric=rubric_id)
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.user = self.request.user
+        self.object.product = self.get_object()
+        self.object.save()
+        return super().form_valid(form)
+
+
+def rubric(request, rubric_id):
+    product = Product.objects.filter(rubric=rubric_id)
     rubrics = Rubric.objects.all()
     current_rubric = Rubric.objects.get(pk=rubric_id)
     context = {
-        'products' : products,
+        'product' : product,
         'rubrics': rubrics,
         'current_rubric': current_rubric
     }
@@ -129,12 +160,18 @@ def product_req(request):
 
 
 class SearchResultsView(ListView):
-    model = Product()
-    template_name = "onshop/product_list.html"
+    model = Product
+    template_name = 'onshop/search_results.html'
 
-    def get_queryset(self):  # new
-        query = self.request.GET.get("q")
-        object_list = Product.objects.filter(
-            Q(name__icontains=query) | Q(state__icontains=query)
-        )
+    def get_queryset(self):
+        query = self.request.GET.get('q')
+        object_list = Product.objects.filter(Q(name__icontains=query) | Q(description__icontains=query))
         return object_list
+
+
+def CommentList(request):
+    comment = Comments.objects.all()
+    context = {
+        'comment':comment
+    }
+    return f"{request},{context}"

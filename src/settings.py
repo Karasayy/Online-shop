@@ -5,7 +5,6 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-
 SECRET_KEY = 'django-insecure-r!)=4&5nvhjawynx6xmhc(eatt&+vsy8c5-=#$@a=#vkzmj)r)'
 
 
@@ -26,6 +25,8 @@ INSTALLED_APPS = [
 
     'onshop',
     'crispy_forms',
+    'rest_framework',
+
 ]
 
 MIDDLEWARE = [

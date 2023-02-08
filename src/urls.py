@@ -13,6 +13,7 @@ urlpatterns = [
     path('register/success/', TemplateView.as_view(template_name='registration/success.html'), name='register-success'),
     path('register/', Register.as_view(), name='register'),
     path('', include('django.contrib.auth.urls')),
+    path('api-auth/', include('rest_framework.urls')),
 ]
 
 if settings.DEBUG:
