@@ -24,7 +24,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'onshop',
-    'crispy_forms',
     'rest_framework',
 
 ]

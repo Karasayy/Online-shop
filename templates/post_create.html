@@ -1,7 +1,7 @@
-{% load crispy_forms_tags %}
+{% load %}
 <form method="post" enctype="multipart/form-data">
 	{% csrf_token%}
-	{{ form|crispy }}
+	{{ form.as_p }}
 	<button type="submit">Submit</button>
 </form>
 
